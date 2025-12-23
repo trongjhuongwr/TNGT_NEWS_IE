@@ -2,6 +2,7 @@ import pandas as pd
 import re
 import json
 import os
+import unicodedata
 
 # Danh sách từ viết tắt cần bảo vệ dấu chấm
 ABBREVIATIONS = {
@@ -17,20 +18,25 @@ ABBREVIATIONS = {
 
 def clean_text_basic(text):
     """
-    Làm sạch văn bản cơ bản & xử lý từ viết tắt để tránh cắt câu sai.
+    Làm sạch văn bản cơ bản & xử lý từ viết tắt.
+    Bổ sung: Chuẩn hóa Unicode NFC để tránh lỗi tách từ của PhoBERT.
     """
     if pd.isna(text) or text == "":
         return ""
     
     text = str(text).strip()
     
-    # Thay thế từ viết tắt (để dấu chấm không bị hiểu nhầm là hết câu)
+    # --- THÊM DÒNG NÀY ---
+    # Chuyển về dạng dựng sẵn (NFC) để đồng bộ với từ điển của PhoBERT
+    text = unicodedata.normalize('NFC', text) 
+    # ---------------------
+
+    # Thay thế từ viết tắt
     for abbr, replacement in ABBREVIATIONS.items():
         text = text.replace(abbr, replacement)
         
-
     text = re.sub(r'\s+', ' ', text) # Gộp khoảng trắng
-    text = re.sub(r'\[.*?\]', '', text) # Xóa text trong ngoặc vuông (nếu có)
+    text = re.sub(r'\[.*?\]', '', text) # Xóa text trong ngoặc vuông
     
     return text.strip()
 

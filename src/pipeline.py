@@ -33,6 +33,10 @@ class TNGTPipeline:
 
         for idx, chunk in enumerate(windows):
             entities = self.ner_predictor.predict(chunk)
+            for e in entities:               
+                if 'word' in e:
+                    e['word'] = e['word'].replace("@@", "")
+                    
             pairs = self._generate_pairs(entities, chunk)
             for p in pairs:
                 label = self.re_predictor.predict(chunk)
